@@ -1,14 +1,23 @@
 # 创建三个vpc
 resource "aws_vpc" "site_a" {
   cidr_block = "192.168.10.0/24"
+  tags       = {
+    Name = "siteA"
+  }
 }
 
 resource "aws_vpc" "site_b" {
   cidr_block = "192.168.20.0/24"
+  tags       = {
+    Name = "siteB"
+  }
 }
 
 resource "aws_vpc" "site_c" {
   cidr_block = "192.168.30.0/24"
+  tags       = {
+    Name = "siteC"
+  }
 }
 
 # 为每个vpc分配一个IGW
