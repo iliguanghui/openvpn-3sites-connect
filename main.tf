@@ -62,6 +62,7 @@ resource "aws_subnet" "site_a" {
   vpc_id                  = aws_vpc.site_a.id
   cidr_block              = "192.168.10.0/24"
   map_public_ip_on_launch = true
+  availability_zone       = "ap-northeast-2c"
   tags                    = {
     Name = "siteA"
   }
@@ -71,6 +72,7 @@ resource "aws_subnet" "site_b" {
   vpc_id                  = aws_vpc.site_b.id
   cidr_block              = "192.168.20.0/24"
   map_public_ip_on_launch = true
+  availability_zone       = "ap-northeast-2c"
   tags                    = {
     Name = "siteB"
   }
@@ -80,6 +82,7 @@ resource "aws_subnet" "site_c" {
   vpc_id                  = aws_vpc.site_c.id
   cidr_block              = "192.168.30.0/24"
   map_public_ip_on_launch = true
+  availability_zone       = "ap-northeast-2c"
   tags                    = {
     Name = "siteC"
   }
