@@ -1,21 +1,24 @@
 # 创建三个vpc
 resource "aws_vpc" "site_a" {
-  cidr_block = "192.168.10.0/24"
-  tags       = {
+  cidr_block           = "192.168.10.0/24"
+  enable_dns_hostnames = true
+  tags                 = {
     Name = "siteA"
   }
 }
 
 resource "aws_vpc" "site_b" {
-  cidr_block = "192.168.20.0/24"
-  tags       = {
+  cidr_block           = "192.168.20.0/24"
+  enable_dns_hostnames = true
+  tags                 = {
     Name = "siteB"
   }
 }
 
 resource "aws_vpc" "site_c" {
-  cidr_block = "192.168.30.0/24"
-  tags       = {
+  cidr_block           = "192.168.30.0/24"
+  enable_dns_hostnames = true
+  tags                 = {
     Name = "siteC"
   }
 }
@@ -59,7 +62,7 @@ resource "aws_subnet" "site_a" {
   vpc_id                  = aws_vpc.site_a.id
   cidr_block              = "192.168.10.0/24"
   map_public_ip_on_launch = true
-  tags = {
+  tags                    = {
     Name = "siteA"
   }
 }
@@ -68,7 +71,7 @@ resource "aws_subnet" "site_b" {
   vpc_id                  = aws_vpc.site_b.id
   cidr_block              = "192.168.20.0/24"
   map_public_ip_on_launch = true
-  tags = {
+  tags                    = {
     Name = "siteB"
   }
 }
@@ -77,7 +80,7 @@ resource "aws_subnet" "site_c" {
   vpc_id                  = aws_vpc.site_c.id
   cidr_block              = "192.168.30.0/24"
   map_public_ip_on_launch = true
-  tags = {
+  tags                    = {
     Name = "siteC"
   }
 }
@@ -85,21 +88,21 @@ resource "aws_subnet" "site_c" {
 # 为每个子网单独分配路由表
 resource "aws_route_table" "site_a" {
   vpc_id = aws_vpc.site_a.id
-  tags = {
+  tags   = {
     Name = "siteA"
   }
 }
 
 resource "aws_route_table" "site_b" {
   vpc_id = aws_vpc.site_b.id
-  tags = {
+  tags   = {
     Name = "siteB"
   }
 }
 
 resource "aws_route_table" "site_c" {
   vpc_id = aws_vpc.site_c.id
-  tags = {
+  tags   = {
     Name = "siteC"
   }
 }
@@ -144,7 +147,7 @@ resource "aws_security_group" "site_a_open_sg" {
   name        = "openSG"
   description = "open to the world"
   vpc_id      = aws_vpc.site_a.id
-  tags = {
+  tags        = {
     Name = "openSG"
   }
 }
@@ -153,7 +156,7 @@ resource "aws_security_group" "site_b_open_sg" {
   name        = "openSG"
   description = "open to the world"
   vpc_id      = aws_vpc.site_b.id
-  tags = {
+  tags        = {
     Name = "openSG"
   }
 }
@@ -162,7 +165,7 @@ resource "aws_security_group" "site_c_open_sg" {
   name        = "openSG"
   description = "open to the world"
   vpc_id      = aws_vpc.site_c.id
-  tags = {
+  tags        = {
     Name = "openSG"
   }
 }
@@ -201,4 +204,137 @@ resource "aws_vpc_security_group_ingress_rule" "site_c_open_sg" {
   security_group_id = aws_security_group.site_c_open_sg.id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1"
+}
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  owners = ["099720109477"] # Canonical
+}
+
+data "aws_key_pair" "work_mac_pro" {
+  key_name = "work-mac-pro"
+}
+
+resource "aws_instance" "vpn1" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.site_a.id
+  iam_instance_profile   = "admin"
+  source_dest_check      = false
+  vpc_security_group_ids = [
+    aws_security_group.site_a_open_sg.id
+  ]
+  key_name   = data.aws_key_pair.work_mac_pro.key_name
+  private_ip = "192.168.10.4"
+  credit_specification {
+    cpu_credits = "unlimited"
+  }
+  instance_market_options {
+    market_type = "spot"
+    spot_options {
+      instance_interruption_behavior = "terminate"
+    }
+  }
+  private_dns_name_options {
+    hostname_type = "resource-name"
+  }
+  tags = {
+    Name = "vpn1"
+  }
+}
+
+resource "aws_instance" "vpn2" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.site_b.id
+  iam_instance_profile   = "admin"
+  source_dest_check      = false
+  vpc_security_group_ids = [
+    aws_security_group.site_b_open_sg.id
+  ]
+  key_name   = data.aws_key_pair.work_mac_pro.key_name
+  private_ip = "192.168.20.4"
+  credit_specification {
+    cpu_credits = "unlimited"
+  }
+  instance_market_options {
+    market_type = "spot"
+    spot_options {
+      instance_interruption_behavior = "terminate"
+    }
+  }
+  private_dns_name_options {
+    hostname_type = "resource-name"
+  }
+  tags = {
+    Name = "vpn2"
+  }
+}
+
+resource "aws_instance" "vpn3" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.site_c.id
+  iam_instance_profile   = "admin"
+  source_dest_check      = false
+  vpc_security_group_ids = [
+    aws_security_group.site_c_open_sg.id
+  ]
+  key_name   = data.aws_key_pair.work_mac_pro.key_name
+  private_ip = "192.168.30.4"
+  credit_specification {
+    cpu_credits = "unlimited"
+  }
+  instance_market_options {
+    market_type = "spot"
+    spot_options {
+      instance_interruption_behavior = "terminate"
+    }
+  }
+  private_dns_name_options {
+    hostname_type = "resource-name"
+  }
+  tags = {
+    Name = "vpn3"
+  }
+}
+
+data "aws_route53_zone" "main" {
+  name = "lgypro.com"
+}
+
+resource "aws_route53_record" "record1" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "openvpn1"
+  type    = "CNAME"
+  ttl     = "60"
+  records = [aws_instance.vpn1.public_dns]
+}
+
+resource "aws_route53_record" "record2" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "openvpn2"
+  type    = "CNAME"
+  ttl     = "60"
+  records = [aws_instance.vpn2.public_dns]
+}
+
+resource "aws_route53_record" "record3" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "openvpn3"
+  type    = "CNAME"
+  ttl     = "60"
+  records = [aws_instance.vpn3.public_dns]
 }
