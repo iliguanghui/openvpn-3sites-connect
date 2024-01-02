@@ -344,3 +344,128 @@ resource "aws_route53_record" "record3" {
   ttl     = "60"
   records = [aws_instance.vpn3.public_dns]
 }
+
+# 添加到其他网段的路由
+resource "aws_route" "site_a_to_site_b" {
+  route_table_id         = aws_route_table.site_a.id
+  destination_cidr_block = "192.168.20.0/24"
+  network_interface_id = aws_instance.vpn1.primary_network_interface_id
+}
+
+resource "aws_route" "site_a_to_site_c" {
+  route_table_id         = aws_route_table.site_a.id
+  destination_cidr_block = "192.168.30.0/24"
+  network_interface_id = aws_instance.vpn1.primary_network_interface_id
+}
+
+resource "aws_route" "site_b_to_site_a" {
+  route_table_id         = aws_route_table.site_b.id
+  destination_cidr_block = "192.168.10.0/24"
+  network_interface_id = aws_instance.vpn2.primary_network_interface_id
+}
+
+resource "aws_route" "site_b_to_site_c" {
+  route_table_id         = aws_route_table.site_b.id
+  destination_cidr_block = "192.168.30.0/24"
+  network_interface_id = aws_instance.vpn2.primary_network_interface_id
+}
+
+resource "aws_route" "site_c_to_site_a" {
+  route_table_id         = aws_route_table.site_c.id
+  destination_cidr_block = "192.168.10.0/24"
+  network_interface_id = aws_instance.vpn3.primary_network_interface_id
+}
+
+resource "aws_route" "site_c_to_site_b" {
+  route_table_id         = aws_route_table.site_c.id
+  destination_cidr_block = "192.168.20.0/24"
+  network_interface_id = aws_instance.vpn3.primary_network_interface_id
+}
+
+# 每个子网创建一台机器扮演应用服务器角色，验证网络连通性
+resource "aws_instance" "app1" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.site_a.id
+  iam_instance_profile   = "admin"
+  source_dest_check      = true
+  vpc_security_group_ids = [
+    aws_security_group.site_a_open_sg.id
+  ]
+  key_name   = data.aws_key_pair.work_mac_pro.key_name
+  private_ip = "192.168.10.100"
+  credit_specification {
+    cpu_credits = "unlimited"
+  }
+  instance_market_options {
+    market_type = "spot"
+    spot_options {
+      instance_interruption_behavior = "terminate"
+    }
+  }
+  private_dns_name_options {
+    hostname_type = "resource-name"
+  }
+  user_data = "#!/bin/bash\nhostnamectl set-hostname app1\n"
+  tags      = {
+    Name = "app1"
+  }
+}
+
+resource "aws_instance" "app2" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.site_b.id
+  iam_instance_profile   = "admin"
+  source_dest_check      = true
+  vpc_security_group_ids = [
+    aws_security_group.site_b_open_sg.id
+  ]
+  key_name   = data.aws_key_pair.work_mac_pro.key_name
+  private_ip = "192.168.20.100"
+  credit_specification {
+    cpu_credits = "unlimited"
+  }
+  instance_market_options {
+    market_type = "spot"
+    spot_options {
+      instance_interruption_behavior = "terminate"
+    }
+  }
+  private_dns_name_options {
+    hostname_type = "resource-name"
+  }
+  user_data = "#!/bin/bash\nhostnamectl set-hostname app2\n"
+  tags      = {
+    Name = "app2"
+  }
+}
+
+resource "aws_instance" "app3" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.site_c.id
+  iam_instance_profile   = "admin"
+  source_dest_check      = true
+  vpc_security_group_ids = [
+    aws_security_group.site_c_open_sg.id
+  ]
+  key_name   = data.aws_key_pair.work_mac_pro.key_name
+  private_ip = "192.168.30.100"
+  credit_specification {
+    cpu_credits = "unlimited"
+  }
+  instance_market_options {
+    market_type = "spot"
+    spot_options {
+      instance_interruption_behavior = "terminate"
+    }
+  }
+  private_dns_name_options {
+    hostname_type = "resource-name"
+  }
+  user_data = "#!/bin/bash\nhostnamectl set-hostname app3\n"
+  tags      = {
+    Name = "app3"
+  }
+}
