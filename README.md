@@ -53,10 +53,7 @@ local 192.168.20.4
 port 1194
 secret secret12.key 0
 ifconfig 10.200.0.2 10.200.0.1
-# 到对端网络
-route 192.168.10.0 255.255.255.0 vpn_gateway 100
-# 经该vpn链路中转，到第三个网络
-route 192.168.30.0 255.255.255.0 vpn_gateway 200
+route 192.168.10.0 255.255.255.0
 user nobody
 group nogroup
 persist-tun
@@ -70,7 +67,6 @@ systemctl status openvpn-server@server.service
 journalctl -u openvpn-server@server.service --no-pager
 # workaround，向其余两个网段发送数据包的时候，通过POSTROUTING修改源地址，暂时还没想到其他好方案
 iptables -t nat -A POSTROUTING -d 192.168.10.0/24 -s 10.200.0.0/30 -j SNAT --to-source 192.168.20.4
-iptables -t nat -A POSTROUTING -d 192.168.30.0/24 -s 10.200.0.0/30 -j SNAT --to-source 192.168.20.4
 ```
 
 在vpn1上执行
@@ -82,10 +78,7 @@ proto udp
 remote openvpn2.lgypro.com 1194
 secret secret12.key 1
 ifconfig 10.200.0.1 10.200.0.2
-# 到对端网络
-route 192.168.20.0 255.255.255.0 vpn_gateway 100
-# 经该vpn链路中转，到第三个网络
-route 192.168.30.0 255.255.255.0 vpn_gateway 200
+route 192.168.20.0 255.255.255.0
 user nobody
 group nogroup
 persist-tun
@@ -99,7 +92,6 @@ systemctl status openvpn-client@client
 journalctl -u openvpn-client@client --no-pager
 # workaround，向其余两个网段发送数据包的时候，通过POSTROUTING修改源地址，暂时还没想到其他好方案
 iptables -t nat -A POSTROUTING -d 192.168.20.0/24 -s 10.200.0.0/30 -j SNAT --to-source 192.168.10.4
-iptables -t nat -A POSTROUTING -d 192.168.30.0/24 -s 10.200.0.0/30 -j SNAT --to-source 192.168.10.4
 ```
 
 ### vpn2-vpn3链路的配置
@@ -122,10 +114,7 @@ local 192.168.30.4
 port 1194
 secret secret23.key 0
 ifconfig 10.200.0.6 10.200.0.5
-# 到对端网络
-route 192.168.20.0 255.255.255.0 vpn_gateway 100
-# 经该vpn链路中转，到第三个网络
-route 192.168.10.0 255.255.255.0 vpn_gateway 200
+route 192.168.20.0 255.255.255.0
 user nobody
 group nogroup
 persist-tun
@@ -139,7 +128,6 @@ systemctl status openvpn-server@server.service
 journalctl -u openvpn-server@server.service --no-pager
 # workaround，向其余两个网段发送数据包的时候，通过POSTROUTING修改源地址，暂时还没想到其他好方案
 iptables -t nat -A POSTROUTING -d 192.168.20.0/24 -s 10.200.0.4/30 -j SNAT --to-source 192.168.30.4
-iptables -t nat -A POSTROUTING -d 192.168.10.0/24 -s 10.200.0.4/30 -j SNAT --to-source 192.168.30.4
 ```
 
 在vpn2上执行
@@ -151,10 +139,7 @@ proto udp
 remote openvpn3.lgypro.com 1194
 secret secret23.key 1
 ifconfig 10.200.0.5 10.200.0.6
-# 到对端网络
-route 192.168.30.0 255.255.255.0 vpn_gateway 100
-# 经该vpn链路中转，到第三个网络
-route 192.168.10.0 255.255.255.0 vpn_gateway 200
+route 192.168.30.0 255.255.255.0
 user nobody
 group nogroup
 persist-tun
@@ -168,7 +153,6 @@ systemctl status openvpn-client@client
 journalctl -u openvpn-client@client --no-pager
 # workaround，向其余两个网段发送数据包的时候，通过POSTROUTING修改源地址，暂时还没想到其他好方案
 iptables -t nat -A POSTROUTING -d 192.168.30.0/24 -s 10.200.0.4/30 -j SNAT --to-source 192.168.20.4
-iptables -t nat -A POSTROUTING -d 192.168.10.0/24 -s 10.200.0.4/30 -j SNAT --to-source 192.168.20.4
 ```
 
 ### vpn3-vpn1链路的配置
@@ -191,10 +175,7 @@ local 192.168.10.4
 port 1194
 secret secret31.key 0
 ifconfig 10.200.0.10 10.200.0.9
-# 到对端网络
-route 192.168.30.0 255.255.255.0 vpn_gateway 100
-# 经该vpn链路中转，到第三个网络
-route 192.168.20.0 255.255.255.0 vpn_gateway 200
+route 192.168.30.0 255.255.255.0
 user nobody
 group nogroup
 persist-tun
@@ -208,7 +189,6 @@ systemctl status openvpn-server@server.service
 journalctl -u openvpn-server@server.service --no-pager
 # workaround，向其余两个网段发送数据包的时候，通过POSTROUTING修改源地址，暂时还没想到其他好方案
 iptables -t nat -A POSTROUTING -d 192.168.30.0/24 -s 10.200.8.0/30 -j SNAT --to-source 192.168.10.4
-iptables -t nat -A POSTROUTING -d 192.168.20.0/24 -s 10.200.8.0/30 -j SNAT --to-source 192.168.10.4
 ```
 
 在vpn3上执行
@@ -220,10 +200,7 @@ proto udp
 remote openvpn1.lgypro.com 1194
 secret secret31.key 1
 ifconfig 10.200.0.9 10.200.0.10
-# 到对端网络
-route 192.168.10.0 255.255.255.0 vpn_gateway 100
-# 经该vpn链路中转，到第三个网络
-route 192.168.20.0 255.255.255.0 vpn_gateway 200
+route 192.168.10.0 255.255.255.0
 user nobody
 group nogroup
 persist-tun
@@ -237,7 +214,6 @@ systemctl status openvpn-client@client
 journalctl -u openvpn-client@client --no-pager
 # workaround，向其余两个网段发送数据包的时候，通过POSTROUTING修改源地址，暂时还没想到其他好方案
 iptables -t nat -A POSTROUTING -d 192.168.10.0/24 -s 10.200.0.8/30 -j SNAT --to-source 192.168.30.4
-iptables -t nat -A POSTROUTING -d 192.168.20.0/24 -s 10.200.0.8/30 -j SNAT --to-source 192.168.30.4
 ```
 
 ## 验证
@@ -246,9 +222,8 @@ iptables -t nat -A POSTROUTING -d 192.168.20.0/24 -s 10.200.0.8/30 -j SNAT --to-
 
 ```log
 root@vpn1:~# ps aux | grep openvpn
-nobody      3073  0.0  0.8  13144  8448 ?        Ss   08:22   0:00 /usr/sbin/openvpn --suppress-timestamps --nobind --config client.conf
-nobody      3198  0.0  0.8  13060  8448 ?        Ss   08:40   0:00 /usr/sbin/openvpn --status /run/openvpn-server/status-server.log --status-version 2 --suppress-timestamps --config server.conf
-root        3228  0.0  0.2   7004  2304 pts/1    S+   08:44   0:00 grep --color=auto openvpn
+nobody      2996  0.0  0.8  13144  8448 ?        Ss   11:34   0:00 /usr/sbin/openvpn --suppress-timestamps --nobind --config client.conf
+nobody      3056  0.0  0.8  13060  8448 ?        Ss   11:41   0:00 /usr/sbin/openvpn --status /run/openvpn-server/status-server.log --status-version 2 --suppress-timestamps --config server.conf
 ```
 
 每台实例都有两个隧道网卡
@@ -262,24 +237,24 @@ root@vpn1:~# ip a
     inet6 ::1/128 scope host 
        valid_lft forever preferred_lft forever
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc fq_codel state UP group default qlen 1000
-    link/ether 0a:47:52:55:d9:22 brd ff:ff:ff:ff:ff:ff
+    link/ether 0a:27:ac:37:58:78 brd ff:ff:ff:ff:ff:ff
     inet 192.168.10.4/24 metric 100 brd 192.168.10.255 scope global dynamic eth0
-       valid_lft 2322sec preferred_lft 2322sec
-    inet6 fe80::847:52ff:fe55:d922/64 scope link 
+       valid_lft 2175sec preferred_lft 2175sec
+    inet6 fe80::827:acff:fe37:5878/64 scope link 
        valid_lft forever preferred_lft forever
 3: tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UNKNOWN group default qlen 500
     link/none 
     inet 10.200.0.1 peer 10.200.0.2/32 scope global tun0
        valid_lft forever preferred_lft forever
-    inet6 fe80::517:6013:89e2:1ab9/64 scope link stable-privacy 
+    inet6 fe80::7582:5e33:e990:5623/64 scope link stable-privacy 
        valid_lft forever preferred_lft forever
 4: tun1: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UNKNOWN group default qlen 500
     link/none 
     inet 10.200.0.10 peer 10.200.0.9/32 scope global tun1
        valid_lft forever preferred_lft forever
-    inet6 fe80::9b05:bee8:fc25:8181/64 scope link stable-privacy 
+    inet6 fe80::b975:e3eb:1a31:b7f9/64 scope link stable-privacy 
        valid_lft forever preferred_lft forever
- 
+
 root@vpn2:~# ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -288,23 +263,23 @@ root@vpn2:~# ip a
     inet6 ::1/128 scope host 
        valid_lft forever preferred_lft forever
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc fq_codel state UP group default qlen 1000
-    link/ether 0a:21:e3:14:e1:24 brd ff:ff:ff:ff:ff:ff
+    link/ether 0a:02:15:be:2a:56 brd ff:ff:ff:ff:ff:ff
     inet 192.168.20.4/24 metric 100 brd 192.168.20.255 scope global dynamic eth0
-       valid_lft 2302sec preferred_lft 2302sec
-    inet6 fe80::821:e3ff:fe14:e124/64 scope link 
+       valid_lft 2158sec preferred_lft 2158sec
+    inet6 fe80::802:15ff:febe:2a56/64 scope link 
        valid_lft forever preferred_lft forever
 3: tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UNKNOWN group default qlen 500
     link/none 
     inet 10.200.0.2 peer 10.200.0.1/32 scope global tun0
        valid_lft forever preferred_lft forever
-    inet6 fe80::cea:44b0:a4dd:c2b3/64 scope link stable-privacy 
+    inet6 fe80::6830:81a0:d66b:743b/64 scope link stable-privacy 
        valid_lft forever preferred_lft forever
 4: tun1: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UNKNOWN group default qlen 500
     link/none 
     inet 10.200.0.5 peer 10.200.0.6/32 scope global tun1
        valid_lft forever preferred_lft forever
-    inet6 fe80::2053:a191:7f01:2947/64 scope link stable-privacy 
-       valid_lft forever preferred_lft forever      
+    inet6 fe80::ea08:8523:1f8f:5f04/64 scope link stable-privacy 
+       valid_lft forever preferred_lft forever
 
 root@vpn3:~# ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
@@ -314,23 +289,23 @@ root@vpn3:~# ip a
     inet6 ::1/128 scope host 
        valid_lft forever preferred_lft forever
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9001 qdisc fq_codel state UP group default qlen 1000
-    link/ether 0a:84:d0:32:4e:46 brd ff:ff:ff:ff:ff:ff
+    link/ether 0a:a1:af:ab:48:d8 brd ff:ff:ff:ff:ff:ff
     inet 192.168.30.4/24 metric 100 brd 192.168.30.255 scope global dynamic eth0
-       valid_lft 2280sec preferred_lft 2280sec
-    inet6 fe80::884:d0ff:fe32:4e46/64 scope link 
+       valid_lft 2138sec preferred_lft 2138sec
+    inet6 fe80::8a1:afff:feab:48d8/64 scope link 
        valid_lft forever preferred_lft forever
 3: tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UNKNOWN group default qlen 500
     link/none 
     inet 10.200.0.6 peer 10.200.0.5/32 scope global tun0
        valid_lft forever preferred_lft forever
-    inet6 fe80::f4e8:234a:eee4:e216/64 scope link stable-privacy 
+    inet6 fe80::37cf:7550:483c:cd3/64 scope link stable-privacy 
        valid_lft forever preferred_lft forever
 4: tun1: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UNKNOWN group default qlen 500
     link/none 
     inet 10.200.0.9 peer 10.200.0.10/32 scope global tun1
        valid_lft forever preferred_lft forever
-    inet6 fe80::2c53:308b:8cd1:a7aa/64 scope link stable-privacy 
-       valid_lft forever preferred_lft forever      
+    inet6 fe80::9f97:853b:7d7f:9cc4/64 scope link stable-privacy 
+       valid_lft forever preferred_lft forever
 ```
 
 每台实例都有到其他网段的路由规则
@@ -343,34 +318,28 @@ default via 192.168.10.1 dev eth0 proto dhcp src 192.168.10.4 metric 100
 192.168.10.0/24 dev eth0 proto kernel scope link src 192.168.10.4 metric 100 
 192.168.10.1 dev eth0 proto dhcp scope link src 192.168.10.4 metric 100 
 192.168.10.2 dev eth0 proto dhcp scope link src 192.168.10.4 metric 100 
-192.168.20.0/24 via 10.200.0.2 dev tun0 metric 100 
-192.168.20.0/24 via 10.200.0.9 dev tun1 metric 200 
-192.168.30.0/24 via 10.200.0.9 dev tun1 metric 100 
-192.168.30.0/24 via 10.200.0.2 dev tun0 metric 200
+192.168.20.0/24 via 10.200.0.2 dev tun0 
+192.168.30.0/24 via 10.200.0.9 dev tun1 
 
 root@vpn2:~# ip route
 default via 192.168.20.1 dev eth0 proto dhcp src 192.168.20.4 metric 100 
 10.200.0.1 dev tun0 proto kernel scope link src 10.200.0.2 
 10.200.0.6 dev tun1 proto kernel scope link src 10.200.0.5 
-192.168.10.0/24 via 10.200.0.1 dev tun0 metric 100 
-192.168.10.0/24 via 10.200.0.6 dev tun1 metric 200 
+192.168.10.0/24 via 10.200.0.1 dev tun0 
 192.168.20.0/24 dev eth0 proto kernel scope link src 192.168.20.4 metric 100 
 192.168.20.1 dev eth0 proto dhcp scope link src 192.168.20.4 metric 100 
 192.168.20.2 dev eth0 proto dhcp scope link src 192.168.20.4 metric 100 
-192.168.30.0/24 via 10.200.0.6 dev tun1 metric 100 
-192.168.30.0/24 via 10.200.0.1 dev tun0 metric 200
+192.168.30.0/24 via 10.200.0.6 dev tun1
 
 root@vpn3:~# ip route
 default via 192.168.30.1 dev eth0 proto dhcp src 192.168.30.4 metric 100 
 10.200.0.5 dev tun0 proto kernel scope link src 10.200.0.6 
 10.200.0.10 dev tun1 proto kernel scope link src 10.200.0.9 
-192.168.10.0/24 via 10.200.0.10 dev tun1 metric 100 
-192.168.10.0/24 via 10.200.0.5 dev tun0 metric 200 
-192.168.20.0/24 via 10.200.0.5 dev tun0 metric 100 
-192.168.20.0/24 via 10.200.0.10 dev tun1 metric 200 
+192.168.10.0/24 via 10.200.0.10 dev tun1 
+192.168.20.0/24 via 10.200.0.5 dev tun0 
 192.168.30.0/24 dev eth0 proto kernel scope link src 192.168.30.4 metric 100 
 192.168.30.1 dev eth0 proto dhcp scope link src 192.168.30.4 metric 100 
-192.168.30.2 dev eth0 proto dhcp scope link src 192.168.30.4 metric 100 
+192.168.30.2 dev eth0 proto dhcp scope link src 192.168.30.4 metric 100
 ```
 
 每台实例都有修改源IP地址的iptables规则
@@ -388,11 +357,9 @@ Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
 
 Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
  pkts bytes target     prot opt in     out     source               destination         
-    2   168 SNAT       all  --  *      *       10.200.0.0/30        192.168.20.0/24      to:192.168.10.4
-    1    84 SNAT       all  --  *      *       10.200.0.0/30        192.168.30.0/24      to:192.168.10.4
+    3   252 SNAT       all  --  *      *       10.200.0.0/30        192.168.20.0/24      to:192.168.10.4
     0     0 SNAT       all  --  *      *       10.200.8.0/30        192.168.30.0/24      to:192.168.10.4
-    0     0 SNAT       all  --  *      *       10.200.8.0/30        192.168.20.0/24      to:192.168.10.4
- 
+
 root@vpn2:~# iptables -t nat -vnL
 Chain PREROUTING (policy ACCEPT 0 packets, 0 bytes)
  pkts bytes target     prot opt in     out     source               destination         
@@ -405,11 +372,9 @@ Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
 
 Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
  pkts bytes target     prot opt in     out     source               destination         
-    2   168 SNAT       all  --  *      *       10.200.0.0/30        192.168.10.0/24      to:192.168.20.4
-    0     0 SNAT       all  --  *      *       10.200.0.0/30        192.168.30.0/24      to:192.168.20.4
-    1    84 SNAT       all  --  *      *       10.200.0.4/30        192.168.30.0/24      to:192.168.20.4
-    0     0 SNAT       all  --  *      *       10.200.0.4/30        192.168.10.0/24      to:192.168.20.4   
- 
+    3   252 SNAT       all  --  *      *       10.200.0.0/30        192.168.10.0/24      to:192.168.20.4
+    2   168 SNAT       all  --  *      *       10.200.0.4/30        192.168.30.0/24      to:192.168.20.4
+
 root@vpn3:~# iptables -t nat -vnL
 Chain PREROUTING (policy ACCEPT 0 packets, 0 bytes)
  pkts bytes target     prot opt in     out     source               destination         
@@ -423,7 +388,14 @@ Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
 Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
  pkts bytes target     prot opt in     out     source               destination         
     2   168 SNAT       all  --  *      *       10.200.0.4/30        192.168.20.0/24      to:192.168.30.4
-    1    84 SNAT       all  --  *      *       10.200.0.4/30        192.168.10.0/24      to:192.168.30.4
-    0     0 SNAT       all  --  *      *       10.200.0.8/30        192.168.10.0/24      to:192.168.30.4
-    0     0 SNAT       all  --  *      *       10.200.0.8/30        192.168.20.0/24      to:192.168.30.4   
+    1    84 SNAT       all  --  *      *       10.200.0.8/30        192.168.10.0/24      to:192.168.30.4
+```
+
+```bash
+ping -c 3 192.168.10.4
+ping -c 3 192.168.20.4
+ping -c 3 192.168.30.4
+ping -c 3 192.168.10.100
+ping -c 3 192.168.20.100
+ping -c 3 192.168.30.100
 ```
