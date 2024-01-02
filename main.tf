@@ -253,7 +253,8 @@ resource "aws_instance" "vpn1" {
   private_dns_name_options {
     hostname_type = "resource-name"
   }
-  tags = {
+  user_data = "#!/bin/bash\nhostnamectl set-hostname vpn1\n"
+  tags      = {
     Name = "vpn1"
   }
 }
@@ -281,7 +282,8 @@ resource "aws_instance" "vpn2" {
   private_dns_name_options {
     hostname_type = "resource-name"
   }
-  tags = {
+  user_data = "#!/bin/bash\nhostnamectl set-hostname vpn2\n"
+  tags      = {
     Name = "vpn2"
   }
 }
@@ -309,7 +311,8 @@ resource "aws_instance" "vpn3" {
   private_dns_name_options {
     hostname_type = "resource-name"
   }
-  tags = {
+  user_data = "#!/bin/bash\nhostnamectl set-hostname vpn3\n"
+  tags      = {
     Name = "vpn3"
   }
 }
